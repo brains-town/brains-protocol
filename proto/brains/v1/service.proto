@@ -1,0 +1,214 @@
+syntax = "proto3";
+
+package brains.v1;
+
+import "brains/v1/types.proto";
+import "google/protobuf/empty.proto";
+
+// ============================================================================
+// Brains Service - Main API
+// ============================================================================
+
+service BrainsService {
+  // ========== Notes ==========
+  rpc AddNote(AddNoteRequest) returns (Note);
+  rpc GetNote(GetNoteRequest) returns (Note);
+  rpc UpdateNote(UpdateNoteRequest) returns (Note);
+  rpc ArchiveNote(ArchiveNoteRequest) returns (Note);
+  rpc PromoteNote(PromoteNoteRequest) returns (Note);
+  rpc DeleteNote(DeleteNoteRequest) returns (google.protobuf.Empty);
+
+  // ========== Cues ==========
+  rpc UpsertCue(UpsertCueRequest) returns (Cue);
+  rpc AddCueAlias(AddCueAliasRequest) returns (Cue);
+  rpc LinkCueNote(LinkCueNoteRequest) returns (google.protobuf.Empty);
+  rpc UnlinkCueNote(UnlinkCueNoteRequest) returns (google.protobuf.Empty);
+  rpc SearchCues(SearchCuesRequest) returns (SearchCuesResponse);
+
+  // ========== Search ==========
+  rpc Search(SearchRequest) returns (SearchResponse);
+
+  // ========== Graph ==========
+  rpc AddEdge(AddEdgeRequest) returns (Edge);
+  rpc Neighbors(NeighborsRequest) returns (NeighborsResponse);
+
+  // ========== Export/Import ==========
+  rpc Export(ExportRequest) returns (stream ExportItem);
+  rpc Import(stream ImportItem) returns (ImportSummary);
+
+  // ========== Health ==========
+  rpc Health(HealthRequest) returns (HealthResponse);
+}
+
+// ============================================================================
+// Request/Response Messages
+// ============================================================================
+
+// AddNote
+message AddNoteRequest {
+  string content = 1;
+  optional string summary = 2;
+  string context_id = 3;
+  repeated string cue_texts = 4;
+  map<string, string> metadata = 5;
+  repeated EvidenceInput evidence = 6;
+}
+
+message EvidenceInput {
+  EvidenceKind kind = 1;
+  string reference = 2;
+}
+
+// GetNote
+message GetNoteRequest {
+  string id = 1;
+}
+
+// UpdateNote
+message UpdateNoteRequest {
+  string id = 1;
+  optional string content = 2;
+  optional string summary = 3;
+  map<string, string> metadata = 4;
+}
+
+// ArchiveNote
+message ArchiveNoteRequest {
+  string id = 1;
+}
+
+// PromoteNote
+message PromoteNoteRequest {
+  string id = 1;
+  optional string vault_name = 2;
+}
+
+// DeleteNote
+message DeleteNoteRequest {
+  string id = 1;
+}
+
+// UpsertCue
+message UpsertCueRequest {
+  string text = 1;
+  repeated string aliases = 2;
+}
+
+// AddCueAlias
+message AddCueAliasRequest {
+  string cue_id = 1;
+  string alias = 2;
+}
+
+// LinkCueNote
+message LinkCueNoteRequest {
+  string cue_id = 1;
+  string note_id = 2;
+}
+
+// UnlinkCueNote
+message UnlinkCueNoteRequest {
+  string cue_id = 1;
+  string note_id = 2;
+}
+
+// SearchCues
+message SearchCuesRequest {
+  string query = 1;
+  uint32 limit = 2;
+}
+
+message SearchCuesResponse {
+  repeated Cue cues = 1;
+}
+
+// Search
+message SearchRequest {
+  string query = 1;
+  repeated string context_ids = 2;
+  optional NoteLocation location = 3;
+  map<string, string> metadata_filters = 4;
+  optional double min_confidence = 5;
+  uint32 limit = 6;
+  bool use_vector = 7;
+  bool use_graph = 8;
+  uint32 graph_hops = 9;
+}
+
+message SearchResponse {
+  repeated SearchResult results = 1;
+}
+
+message SearchResult {
+  Note note = 1;
+  double score = 2;
+  repeated Cue matched_cues = 3;
+}
+
+// AddEdge
+message AddEdgeRequest {
+  string from_id = 1;
+  NodeType from_type = 2;
+  string to_id = 3;
+  NodeType to_type = 4;
+  EdgeType edge_type = 5;
+  optional double strength = 6;
+}
+
+// Neighbors
+message NeighborsRequest {
+  string node_id = 1;
+  NodeType node_type = 2;
+  optional EdgeType edge_type = 3;
+  uint32 limit = 4;
+}
+
+message NeighborsResponse {
+  repeated NeighborResult neighbors = 1;
+}
+
+message NeighborResult {
+  string node_id = 1;
+  NodeType node_type = 2;
+  Edge edge = 3;
+}
+
+// Export/Import
+message ExportRequest {
+  bool include_evidence = 1;
+}
+
+message ExportItem {
+  oneof item {
+    Note note = 1;
+    Cue cue = 2;
+    Edge edge = 3;
+    Evidence evidence = 4;
+  }
+}
+
+message ImportItem {
+  oneof item {
+    Note note = 1;
+    Cue cue = 2;
+    Edge edge = 3;
+    Evidence evidence = 4;
+  }
+}
+
+message ImportSummary {
+  uint32 notes_imported = 1;
+  uint32 cues_imported = 2;
+  uint32 edges_imported = 3;
+  uint32 evidence_imported = 4;
+  repeated string errors = 5;
+}
+
+// Health
+message HealthRequest {}
+
+message HealthResponse {
+  bool healthy = 1;
+  string version = 2;
+  map<string, bool> components = 3;
+}
