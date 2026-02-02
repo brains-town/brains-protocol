@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package brains.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// ============================================================================
+// Core ID Types
+// ============================================================================
+
+message NoteId {
+  string value = 1;
+}
+
+message CueId {
+  string value = 1;
+}
+
+message EdgeId {
+  string value = 1;
+}
+
+message EvidenceId {
+  string value = 1;
+}
+
+// ============================================================================
+// Note
+// ============================================================================
+
+enum NoteLocation {
+  NOTE_LOCATION_UNSPECIFIED = 0;
+  NOTE_LOCATION_WORKING = 1;
+  NOTE_LOCATION_ARCHIVE = 2;
+  NOTE_LOCATION_VAULT = 3;
+}
+
+message Note {
+  NoteId id = 1;
+  string content = 2;
+  optional string summary = 3;
+  string context_id = 4;
+  NoteLocation location = 5;
+  double confidence = 6;
+  map<string, string> metadata = 7;
+  repeated CueId cue_ids = 8;
+  repeated Evidence evidence = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  google.protobuf.Timestamp last_accessed = 12;
+  uint64 access_count = 13;
+}
+
+// ============================================================================
+// Cue
+// ============================================================================
+
+message Cue {
+  CueId id = 1;
+  string text = 2;
+  bool canonical = 3;
+  repeated string aliases = 4;
+  repeated NoteId note_ids = 5;
+  double confidence = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp last_accessed = 8;
+  uint64 access_count = 9;
+}
+
+// ============================================================================
+// Edge (Graph)
+// ============================================================================
+
+enum EdgeType {
+  EDGE_TYPE_UNSPECIFIED = 0;
+  EDGE_TYPE_RELATED_TO = 1;
+  EDGE_TYPE_SOLVED_BY = 2;
+  EDGE_TYPE_CAUSED_BY = 3;
+  EDGE_TYPE_DEPENDS_ON = 4;
+  EDGE_TYPE_LEADS_TO = 5;
+  EDGE_TYPE_CONTRADICTS = 6;
+}
+
+enum NodeType {
+  NODE_TYPE_UNSPECIFIED = 0;
+  NODE_TYPE_CUE = 1;
+  NODE_TYPE_NOTE = 2;
+}
+
+message Edge {
+  EdgeId id = 1;
+  string from_id = 2;
+  string to_id = 3;
+  NodeType from_type = 4;
+  NodeType to_type = 5;
+  EdgeType edge_type = 6;
+  double strength = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp last_reinforced = 9;
+  uint64 access_count = 10;
+}
+
+// ============================================================================
+// Evidence
+// ============================================================================
+
+enum EvidenceKind {
+  EVIDENCE_KIND_UNSPECIFIED = 0;
+  EVIDENCE_KIND_GIT_COMMIT = 1;
+  EVIDENCE_KIND_FILE = 2;
+  EVIDENCE_KIND_URL = 3;
+  EVIDENCE_KIND_CODE = 4;
+  EVIDENCE_KIND_TERMINAL = 5;
+}
+
+message Evidence {
+  EvidenceId id = 1;
+  EvidenceKind kind = 2;
+  string reference = 3;
+  optional string content_hash = 4;
+  bool validated = 5;
+  optional google.protobuf.Timestamp last_checked = 6;
+  uint32 validation_failures = 7;
+}
