@@ -1,7 +1,7 @@
 version: v2
-name: buf.build/brains-town/brains-protocol
 modules:
   - path: proto
+    name: buf.build/brains-town/brains-protocol
 lint:
   use:
     - STANDARD
