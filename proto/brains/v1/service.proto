@@ -25,6 +25,10 @@ service BrainsService {
   rpc UnlinkCueNote(UnlinkCueNoteRequest) returns (google.protobuf.Empty);
   rpc SearchCues(SearchCuesRequest) returns (SearchCuesResponse);
 
+  // ========== Evidence ==========
+  rpc AddEvidence(AddEvidenceRequest) returns (Evidence);
+  rpc ValidateEvidence(ValidateEvidenceRequest) returns (Evidence);
+
   // ========== Search ==========
   rpc Search(SearchRequest) returns (SearchResponse);
 
@@ -57,6 +61,16 @@ message AddNoteRequest {
 message EvidenceInput {
   EvidenceKind kind = 1;
   string reference = 2;
+}
+
+// Evidence
+message AddEvidenceRequest {
+  string note_id = 1;
+  EvidenceInput evidence = 2;
+}
+
+message ValidateEvidenceRequest {
+  string evidence_id = 1;
 }
 
 // GetNote
