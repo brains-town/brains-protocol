@@ -5,20 +5,18 @@ Protocol buffer definitions for the Brains memory system.
 ## Structure
 
 - `proto/` - Protocol buffer source files
-- `gen/go/` - Generated Go code
-- `gen/rust/` - Generated Rust code (optional)
+- `gen/go/` - Generated Go code (local, not committed)
+- `gen/rust/` - Generated Rust code (local, not committed)
 
 ## Usage
 
-### Go
-```go
-import "github.com/brains-town/brains-protocol/gen/go/brains/v1"
+Generate language stubs with Buf:
+
+```bash
+make generate
 ```
 
-### Rust
-```bash
-cargo add brains-protocol --git https://github.com/brains-town/brains-protocol
-```
+The generated code is written under `gen/` and is intentionally ignored in git.
 
 ## Development
 
